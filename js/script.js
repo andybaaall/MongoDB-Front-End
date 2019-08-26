@@ -58,7 +58,17 @@ $('#addProductButton').click(function(){
                 price: productPrice
             },
             success:function(result){
-                console.log(result);
+                $('#productName').val(null);
+                $('#productPrice').val(null);
+                $('#productList').append(`
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${result.name}
+                        <div>
+                            <button class="btn btn-info editBtn">Edit</button>
+                            <button class="btn btn-danger">Remove</button>
+                        </div>
+                    </li>
+                `);
             },
             error: function(error){
                 console.log(error);
