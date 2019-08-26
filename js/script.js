@@ -44,8 +44,6 @@ getProductsData = () => {
     })
 }
 
-
-
 $('#productList').on('click', '.editBtn', function() {
     event.preventDefault();
     const id = $(this).parent().parent().data('id');
@@ -57,6 +55,7 @@ $('#productList').on('click', '.editBtn', function() {
             console.log(product);
             $('#productName').val(product['name']);
             $('#productPrice').val(product['price']);
+            $('#productID').val(product['_id']);
             $('#addProductButton').text('Edit Product').addClass('btn-warning');
             $('#heading').text('Edit Product');
             editing = true;
@@ -69,7 +68,6 @@ $('#productList').on('click', '.editBtn', function() {
 
 });
 
-
 $('#addProductButton').click(function(){
     event.preventDefault();
     let productName = $('#productName').val();
@@ -80,12 +78,31 @@ $('#addProductButton').click(function(){
         console.log('please enter a products price');
     } else {
         if(editing === true){
-            console.log(`Edited ${productName} to be $${productPrice}`);
-            $('#productName').val(null);
-            $('#productPrice').val(null);
-            $('#addProductButton').text('Add New Product').removeClass('btn-warning');
-            $('#heading').text('Add New Product');
-            editing = false;
+
+
+            const id = $('#productID').val();
+            $.ajax({
+                url: `${serverURL}:${serverPort}/editProduct/${id}`,
+                type: 'PATCH',
+                data: {
+                    name: productName,
+                    price: productPrice
+                },
+                success:function(result){
+                    $('#productName').val(null);
+                    $('#productPrice').val(null);
+                    $('#productID').val(null);
+                    $('#addProductButton').text('Add New Product').removeClass('btn-warning');
+                    $('#heading').text('Add New Product');
+                    editing = false;
+                },
+                error: function(err){
+                    console.log(err);
+                    console.log('something went wront with editing the product');
+                }
+            })
+
+
         } else {
             console.log(`${productName} costs $${productPrice}`);
             $.ajax({
