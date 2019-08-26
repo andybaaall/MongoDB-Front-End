@@ -1,5 +1,6 @@
 let serverURL;
 let serverPort;
+let editing = false;
 
 $.ajax({
   url: 'config.json',
@@ -23,10 +24,13 @@ getProductsData = () => {
         success:function(data){
             for (var i = 0; i < data.length; i++) {
                 $('#productList').append(`
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                        data-id="${data[i]._id}"
+                    >
                         ${data[i].name}
                         <div>
-                            <button class="btn btn-info">Edit</button>
+                            <button class="btn btn-info editBtn">Edit</button>
                             <button class="btn btn-danger">Remove</button>
                         </div>
                     </li>
@@ -40,6 +44,32 @@ getProductsData = () => {
     })
 }
 
+
+
+$('#productList').on('click', '.editBtn', function() {
+    event.preventDefault();
+    const id = $(this).parent().parent().data('id');
+    $.ajax({
+        url: `${serverURL}:${serverPort}/product/${id}`,
+        type: 'get',
+        dataType: 'json',
+        success:function(product){
+            console.log(product);
+            $('#productName').val(product['name']);
+            $('#productPrice').val(product['price']);
+            $('#addProductButton').text('Edit Product').addClass('btn-warning');
+            $('#heading').text('Edit Product');
+            editing = true;
+        },
+        error:function(err){
+            console.log(err);
+            console.log('something went wrong with getting the single product');
+        }
+    })
+
+});
+
+
 $('#addProductButton').click(function(){
     event.preventDefault();
     let productName = $('#productName').val();
@@ -49,31 +79,41 @@ $('#addProductButton').click(function(){
     } else if(productPrice.length === 0){
         console.log('please enter a products price');
     } else {
-        console.log(`${productName} costs $${productPrice}`);
-        $.ajax({
-            url: `${serverURL}:${serverPort}/product`,
-            type: 'POST',
-            data: {
-                name: productName,
-                price: productPrice
-            },
-            success:function(result){
-                $('#productName').val(null);
-                $('#productPrice').val(null);
-                $('#productList').append(`
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        ${result.name}
-                        <div>
-                            <button class="btn btn-info editBtn">Edit</button>
-                            <button class="btn btn-danger">Remove</button>
-                        </div>
-                    </li>
-                `);
-            },
-            error: function(error){
-                console.log(error);
-                console.log('something went wrong with sending the data');
-            }
-        })
+        if(editing === true){
+            console.log(`Edited ${productName} to be $${productPrice}`);
+            $('#productName').val(null);
+            $('#productPrice').val(null);
+            $('#addProductButton').text('Add New Product').removeClass('btn-warning');
+            $('#heading').text('Add New Product');
+            editing = false;
+        } else {
+            console.log(`${productName} costs $${productPrice}`);
+            $.ajax({
+                url: `${serverURL}:${serverPort}/product`,
+                type: 'POST',
+                data: {
+                    name: productName,
+                    price: productPrice
+                },
+                success:function(result){
+                    $('#productName').val(null);
+                    $('#productPrice').val(null);
+                    $('#productList').append(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${result.name}
+                            <div>
+                                <button class="btn btn-info editBtn">Edit</button>
+                                <button class="btn btn-danger">Remove</button>
+                            </div>
+                        </li>
+                    `);
+                },
+                error: function(error){
+                    console.log(error);
+                    console.log('something went wrong with sending the data');
+                }
+            })
+        }
+
     }
 })
