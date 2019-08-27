@@ -89,6 +89,7 @@ $('#addProductButton').click(function(){
                     price: productPrice
                 },
                 success:function(result){
+                    // edited result only shows up on refresh? maybe we can repopulate the product list in here.
                     $('#productName').val(null);
                     $('#productPrice').val(null);
                     $('#productID').val(null);
