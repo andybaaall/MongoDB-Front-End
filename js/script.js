@@ -1,5 +1,6 @@
 let serverURL;
 let serverPort;
+let url;
 let editing = false;
 
 $.ajax({
@@ -9,6 +10,7 @@ $.ajax({
   success:function(keys){
     serverURL = keys['SERVER_URL'];
     serverPort = keys['SERVER_PORT'];
+    url = `${serverURL}:${serverPort}`;
     getProductsData();
   },
   error: function(){
@@ -18,7 +20,7 @@ $.ajax({
 
 getProductsData = () => {
     $.ajax({
-        url: `${serverURL}:${serverPort}/allProducts`,
+        url: `${url}/allProducts`,
         type: 'GET',
         dataType: 'json',
         success:function(data){
@@ -48,7 +50,7 @@ $('#productList').on('click', '.editBtn', function() {
     event.preventDefault();
     const id = $(this).parent().parent().data('id');
     $.ajax({
-        url: `${serverURL}:${serverPort}/product/${id}`,
+        url: `${url}/product/${id}`,
         type: 'get',
         dataType: 'json',
         success:function(product){
@@ -73,16 +75,16 @@ $('#addProductButton').click(function(){
     let productName = $('#productName').val();
     let productPrice = $('#productPrice').val();
     if(productName.length === 0){
-        console.log('please enter a products name');
+        console.log('please enter a product name');
     } else if(productPrice.length === 0){
-        console.log('please enter a products price');
+        console.log('please enter a product price');
     } else {
         if(editing === true){
 
 
             const id = $('#productID').val();
             $.ajax({
-                url: `${serverURL}:${serverPort}/editProduct/${id}`,
+                url: `${url}/editProduct/${id}`,
                 type: 'PATCH',
                 data: {
                     name: productName,
@@ -107,7 +109,7 @@ $('#addProductButton').click(function(){
         } else {
             console.log(`${productName} costs $${productPrice}`);
             $.ajax({
-                url: `${serverURL}:${serverPort}/product`,
+                url: `${url}/product`,
                 type: 'POST',
                 data: {
                     name: productName,
@@ -135,3 +137,79 @@ $('#addProductButton').click(function(){
 
     }
 })
+
+$('#loginTabBtn').click(function(){
+  event.preventDefault();
+  $('#registerTabBtn').removeClass('active');
+  $('#registerForm').addClass('d-none');
+  $('#loginTabBtn').addClass('active');
+  $('#loginForm').show();
+});
+
+$('#registerTabBtn').click(function(){
+  event.preventDefault();
+  $('#loginTabBtn').removeClass('active');
+  $('#loginForm').hide();
+  $('#registerTabBtn').addClass('active');
+  $('#registerForm').removeClass('d-none');
+});
+
+$('#lSubmit').click(function(){
+  event.preventDefault();
+  let lUsername = $('#lUsername').val();
+  let lPassword = $('#lPassword').val();
+  if(lPassword.length === 0 && lUsername.length === 0){
+      console.log('please enter a (login) username and a (login) password');
+  } else if(lPassword.length === 0){
+      console.log('please enter a (login) password');
+  } else if(lUsername.length === 0){
+      console.log('please enter a (login) username');
+  } else {
+    console.log('okay, all logged in');
+    console.log(`login password is ${lPassword}`);
+  }
+})
+
+$('#rSubmit').click(function(){
+  event.preventDefault();
+  let rUsername = $('#rUsername').val();
+  let rPassword = $('#rPassword').val();
+  let rEmail = $('#rEmail').val();
+  let rConfirmPassword = $('#rConfirmPassword').val();
+  if(rPassword.length === 0 && rUsername.length === 0 && rEmail.length === 0){
+      console.log('please enter a (registration) username, a (registration) password, and a (registration) email');
+  } else if(rPassword.length === 0 && rUsername.length === 0){
+      console.log('please enter a (registration) password and a (registration) username');
+  } else if(rUsername.length === 0 && rEmail.length === 0){
+      console.log('please enter a (registration) username and a (registration) email');
+  } else if(rPassword.length === 0 && rEmail.length === 0){
+      console.log('please enter a (registration) password and a (registration) email');
+  }  else if(rPassword.length === 0){
+      console.log('please enter a (registration) password');
+  } else if(rUsername.length === 0){
+      console.log('please enter a (registration) username');
+  } else if(rEmail.length === 0){
+      console.log('please enter a (registration) email');
+  } else if (rPassword != rConfirmPassword) {
+    console.log(`password doesn't match`);
+  } else {
+    // console.log('okay, all registered');
+    // console.log(`registration password is ${rPassword}`);
+    $.ajax({
+      url: `${url}/getUser`,
+      type: 'POST',
+      data: {
+        username: rUsername,
+        email: rEmail,
+        password: rPassword
+      },
+      success: function(result){
+        console.log(result);
+      },
+      error: function(result){
+        console.log(result);
+        console.log('got an error');
+      }
+    });
+  }
+});
