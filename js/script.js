@@ -156,17 +156,42 @@ $('#registerTabBtn').click(function(){
 
 $('#lSubmit').click(function(){
   event.preventDefault();
-  let lUsername = $('#lUsername').val();
-  let lPassword = $('#lPassword').val();
-  if(lPassword.length === 0 && lUsername.length === 0){
+  let username = $('#lUsername').val();
+  let password = $('#lPassword').val();
+
+  if(password.length === 0 && username.length === 0){
       console.log('please enter a (login) username and a (login) password');
-  } else if(lPassword.length === 0){
+  } else if(password.length === 0){
       console.log('please enter a (login) password');
-  } else if(lUsername.length === 0){
+  } else if(username.length === 0){
       console.log('please enter a (login) username');
   } else {
-    console.log('okay, all logged in');
-    console.log(`login password is ${lPassword}`);
+    $.ajax({
+      url: `${url}/login`,
+      type: 'POST',
+      data: {
+        username: username,
+        password: password
+      },
+      success: function(result){
+          // console.log(result);
+          if (result === 'invalid username'){
+            console.log(`sorry, that username doesn't exist`);
+          } else if (result === 'invalid password'){
+            console.log(`sorry, that's the wrong password`);
+          } else {
+            console.log(`let's get you logged in, champ`);
+            console.log(result);
+
+            // sessionStorage.setItem('userId', result.id);
+            // let's get this bad baby working
+          }
+      },
+      error: function(err){
+        console.log(err);
+        console.log('got an error');
+      }
+    })
   }
 })
 
@@ -213,3 +238,9 @@ $('#rSubmit').click(function(){
     });
   }
 });
+
+
+$(document).ready(function(){
+  // log session storage
+
+})
