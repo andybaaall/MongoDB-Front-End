@@ -252,6 +252,27 @@ $(document).ready(function(){
 
   console.log(sessionStorage);
 
+  const loginBtn = $('#loginBtn');
+  const logoutBtn = $('#logoutBtn');
+
+  if (sessionStorage.length >= 1) {
+    console.log(`already logged in; show dashboard`);
+    loginBtn.hide();
+  }
+  else {
+    console.log(`need to login; don't show dashboard`);
+    logoutBtn.hide();
+  }
+
+  logoutBtn.click(function(){
+    logoutBtn.hide();
+    loginBtn.show();
+    sessionStorage.clear();
+    console.log(sessionStorage);
+
+    // opens modal for login? shouldn't!
+  })
+
   // From here we are going to be using a lot of if statements to hide and show specifc elements.
   // If there is a value for user_Name, then we will see the logout button, but if there isn't then we will see the login/Register button.
   // to clear out sessionStorage we need to call. sessionStorage.clear() which will clear all the items in our session storage.
