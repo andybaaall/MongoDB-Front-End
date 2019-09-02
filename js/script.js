@@ -1,6 +1,3 @@
-
-
-
 $(document).ready(function(){
   let serverURL;
   let serverPort;
@@ -28,26 +25,38 @@ $(document).ready(function(){
           type: 'GET',
           dataType: 'json',
           success:function(data){
+            // console.log(sessionStorage);
+            $('#productList').empty();
+
               for (var i = 0; i < data.length; i++) {
-                  $('#productList').append(`
-                      <li
-                          class="list-group-item d-flex justify-content-between align-items-center"
-                          data-id="${data[i]._id}"
-                      >
-                          ${data[i].name}
-                          <div>
-                              <button class="btn btn-info editBtn">Edit</button>
-                              <button class="btn btn-danger">Remove</button>
-                          </div>
-                      </li>
-                  `);
+                let product = `<li
+                                    class="list-group-item d-flex justify-content-between align-items-center"
+                                    data-id="${data[i]._id}"
+                                >`;
+                product += data[i].name;
+                if (sessionStorage.user_Name) {
+                  product += `<div>
+                                <button class="btn btn-info editBtn">Edit</button>
+                                <button class="btn btn-danger">Remove</button>
+                              </div>`
+                }
+                product += `</li>`;
+                $('#productList').append(product);
+
               }
+
           },
           error: function(err){
               console.log(err);
               console.log('something went wrong');
           }
       })
+  }
+
+  hideEditProducts = (string) => {
+    if (sessionStorage.username) {
+      return string;
+    }
   }
 
   $('#productList').on('click', '.editBtn', function() {
@@ -158,7 +167,7 @@ $(document).ready(function(){
     $('#registerForm').removeClass('d-none');
   });
 
-  $('#lSubmit').click(function(){
+  $('#loginForm').submit(function(){
     event.preventDefault();
     let username = $('#lUsername').val();
     let password = $('#lPassword').val();
@@ -193,10 +202,16 @@ $(document).ready(function(){
               // This is how we will be creating our login system
               // If we save a value into sessionStorage or localStorage, if we keep refreshing our page, the value we saved will still be there.
               // In our document.ready() function bellow we are checking to see if there is a value in our sessionStorage called user_Name
-              sessionStorage.setItem('user_Id', result.id);
+              sessionStorage.setItem('user_Id', result._id);
               sessionStorage.setItem('user_Name', result.username);
               sessionStorage.setItem('user_Email', result.email);
+
+              $('#lrModal').modal('hide');
+              $('#loginBtn').hide();
+              $('#logoutBtn').removeClass('d-none');
+              $('#addProductSection').removeClass('d-none');
             }
+            getProductsData();
         },
         error: function(err){
           console.log(err);
@@ -206,7 +221,7 @@ $(document).ready(function(){
     }
   })
 
-  $('#rSubmit').click(function(){
+  $('#registerForm').submit(function(){
     event.preventDefault();
     let rUsername = $('#rUsername').val();
     let rPassword = $('#rPassword').val();
@@ -250,31 +265,34 @@ $(document).ready(function(){
     }
   });
 
-  console.log(sessionStorage);
 
   const loginBtn = $('#loginBtn');
   const logoutBtn = $('#logoutBtn');
 
-  if (sessionStorage.length >= 1) {
+  logoutBtn.click(function(){
+    sessionStorage.clear();
+    getProductsData();
+    loginBtn.show();
+    logoutBtn.hide();
+  });
+
+  if (sessionStorage.username) {
     console.log(`already logged in; show dashboard`);
     loginBtn.hide();
+    logoutBtn.removeClass('d-none');
+    $('#addProductContainer').removeClass('d-none');
   }
   else {
+    sessionStorage.clear();
     console.log(`need to login; don't show dashboard`);
-    logoutBtn.hide();
+    loginBtn.show();
+    logoutBtn.addClass('d-none');
+    $('#addProductContainer').hide();
   }
 
-  logoutBtn.click(function(){
-    logoutBtn.hide();
-    loginBtn.show();
-    sessionStorage.clear();
-    console.log(sessionStorage);
-
-    // opens modal for login? shouldn't!
-  })
+});
 
   // From here we are going to be using a lot of if statements to hide and show specifc elements.
   // If there is a value for user_Name, then we will see the logout button, but if there isn't then we will see the login/Register button.
   // to clear out sessionStorage we need to call. sessionStorage.clear() which will clear all the items in our session storage.
   // This will happen on a click function for our logout button
-})
