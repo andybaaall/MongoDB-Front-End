@@ -37,7 +37,7 @@ $(document).ready(function(){
                 if (sessionStorage.user_Name) {
                   product += `<div>
                                 <button class="btn btn-info editBtn">Edit</button>
-                                <button class="btn btn-danger">Remove</button>
+                                <button class="btn btn-danger rmBtn">Remove</button>
                               </div>`
                 }
                 product += `</li>`;
@@ -51,12 +51,6 @@ $(document).ready(function(){
               console.log('something went wrong');
           }
       })
-  }
-
-  hideEditProducts = (string) => {
-    if (sessionStorage.username) {
-      return string;
-    }
   }
 
   $('#productList').on('click', '.editBtn', function() {
@@ -80,7 +74,24 @@ $(document).ready(function(){
               console.log('something went wrong with getting the single product');
           }
       })
+  });
 
+  $('#productList').on('click', '.rmBtn', function(){
+    event.preventDefault();
+    const id = $(this).parent().parent().data('id');
+    const li = $(this).parent().parent();
+    $.ajax({
+      url: `${url}/product/${id}`,
+      type: 'DELETE',
+      data: 'json',
+      success: function () {
+        li.remove();
+      },
+      err: function (err) {
+        console.log(err);
+        console.log('something went wrong with deleting the product');
+      }
+    });
   });
 
   $('#addProductButton').click(function(){
@@ -102,7 +113,6 @@ $(document).ready(function(){
                       price: productPrice
                   },
                   success:function(result){
-                      // edited result only shows up on refresh? maybe we can repopulate the product list in here.
                       $('#productName').val(null);
                       $('#productPrice').val(null);
                       $('#productID').val(null);
@@ -274,16 +284,17 @@ $(document).ready(function(){
     getProductsData();
     loginBtn.show();
     logoutBtn.hide();
+    $('#addProductForm').hide();
   });
 
-  if (sessionStorage.username) {
+  if (sessionStorage.user_Name) {
     console.log(`already logged in; show dashboard`);
     loginBtn.hide();
     logoutBtn.removeClass('d-none');
     $('#addProductContainer').removeClass('d-none');
   }
   else {
-    sessionStorage.clear();
+    // sessionStorage.clear();
     console.log(`need to login; don't show dashboard`);
     loginBtn.show();
     logoutBtn.addClass('d-none');
@@ -291,8 +302,3 @@ $(document).ready(function(){
   }
 
 });
-
-  // From here we are going to be using a lot of if statements to hide and show specifc elements.
-  // If there is a value for user_Name, then we will see the logout button, but if there isn't then we will see the login/Register button.
-  // to clear out sessionStorage we need to call. sessionStorage.clear() which will clear all the items in our session storage.
-  // This will happen on a click function for our logout button
