@@ -35,10 +35,12 @@ $(document).ready(function(){
                                 >`;
                 product += data[i].name;
                 if (sessionStorage.user_Name) {
-                  product += `<div>
-                                <button class="btn btn-info editBtn">Edit</button>
-                                <button class="btn btn-danger rmBtn">Remove</button>
-                              </div>`
+                  // if (sessionStorage.user_Id === data[i].user_id){
+                    product += `<div>
+                                  <button class="btn btn-info editBtn">Edit</button>
+                                  <button class="btn btn-danger rmBtn">Remove</button>
+                                </div>`
+                  // }
                 }
                 product += `</li>`;
                 $('#productList').append(product);
@@ -55,10 +57,19 @@ $(document).ready(function(){
 
   $('#productList').on('click', '.editBtn', function() {
       event.preventDefault();
+
+      if (!sessionStorage.user_Id){
+        alert('401 error - permission denied');
+        return;
+      }
+
       const id = $(this).parent().parent().data('id');
       $.ajax({
           url: `${url}/product/${id}`,
-          type: 'get',
+          type: 'POST',
+          data: {
+            userId: sessionStorage.user_Id
+          },
           dataType: 'json',
           success:function(product){
               console.log(product);
@@ -78,6 +89,12 @@ $(document).ready(function(){
 
   $('#productList').on('click', '.rmBtn', function(){
     event.preventDefault();
+
+    if (!sessionStorage.user_Id){
+      alert('401 error - permission denied');
+      return;
+    }
+
     const id = $(this).parent().parent().data('id');
     const li = $(this).parent().parent();
     $.ajax({
@@ -96,6 +113,12 @@ $(document).ready(function(){
 
   $('#addProductButton').click(function(){
       event.preventDefault();
+
+      if (!sessionStorage.user_Id){
+        alert('401 error - permission denied');
+        return;
+      }
+
       let productName = $('#productName').val();
       let productPrice = $('#productPrice').val();
       if(productName.length === 0){
@@ -110,7 +133,8 @@ $(document).ready(function(){
                   type: 'PATCH',
                   data: {
                       name: productName,
-                      price: productPrice
+                      price: productPrice,
+                      userId: sessionStorage.user_Id
                   },
                   success:function(result){
                       $('#productName').val(null);
@@ -129,36 +153,37 @@ $(document).ready(function(){
 
 
           } else {
-              console.log(`${productName} costs $${productPrice}`);
               $.ajax({
                   url: `${url}/product`,
                   type: 'POST',
                   data: {
                       name: productName,
-                      price: productPrice
+                      price: productPrice,
+                      userId: sessionStorage.user_Id
                   },
                   success:function(result){
-                      $('#productName').val(null);
-                      $('#productPrice').val(null);
-                      $('#productList').append(`
-                          <li class="list-group-item d-flex justify-content-between align-items-center">
-                              ${result.name}
-                              <div>
-                                  <button class="btn btn-info editBtn">Edit</button>
-                                  <button class="btn btn-danger">Remove</button>
-                              </div>
-                          </li>
-                      `);
+                    console.log(result);
+                    $('#productName').val(null);
+                    $('#productPrice').val(null);
+                    $('#productList').append(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${result.name}
+                            <div>
+                                <button class="btn btn-info editBtn">Edit</button>
+                                <button class="btn btn-danger">Remove</button>
+                            </div>
+                        </li>
+                    `);
                   },
                   error: function(error){
-                      console.log(error);
-                      console.log('something went wrong with sending the data');
+                    console.log(error);
+                    console.log('something went wrong with sending the data');
                   }
-              })
+              });
           }
 
       }
-  })
+  });
 
   $('#loginTabBtn').click(function(){
     event.preventDefault();
@@ -178,6 +203,12 @@ $(document).ready(function(){
 
   $('#loginForm').submit(function(){
     event.preventDefault();
+
+    if (sessionStorage.user_Id){
+      alert('401 error - permission denied');
+      return;
+    }
+
     let username = $('#lUsername').val();
     let password = $('#lPassword').val();
 
@@ -232,6 +263,12 @@ $(document).ready(function(){
 
   $('#registerForm').submit(function(){
     event.preventDefault();
+
+    if (sessionStorage.user_Id){
+      alert('401 error - permission denied');
+      return;
+    }
+
     let rUsername = $('#rUsername').val();
     let rPassword = $('#rPassword').val();
     let rEmail = $('#rEmail').val();
@@ -281,6 +318,12 @@ $(document).ready(function(){
 
   logoutBtn.click(function(){
     sessionStorage.clear();
+
+    if (sessionStorage.user_Id){
+      alert('401 error - permission denied');
+      return;
+    }
+
     getProductsData();
     loginBtn.show();
     logoutBtn.hide();
@@ -300,5 +343,26 @@ $(document).ready(function(){
     logoutBtn.addClass('d-none');
     $('#addProductContainer').addClass('d-none');
   }
+
+  console.log(sessionStorage);
+
+
+
+
+
+
+
+
+
+
+
+
+  // ISSUES:
+  // logout button not rendering after logging in; buttons 'flashing' on load
+  // need to reload to see add Product form and logout btn
+  // hecka refactoring required
+
+
+
 
 });
